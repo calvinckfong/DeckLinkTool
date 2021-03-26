@@ -17,7 +17,7 @@ CPP_DEPS += \
 DecklinkAPI/%.o: ../DecklinkAPI/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -I/home/calvin.fong/source/DeckLinkTool/DecklinkAPI -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -std=c++0x -I/home/calvin.fong/source/DeckLinkTool/DecklinkAPI -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

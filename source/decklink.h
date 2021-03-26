@@ -23,10 +23,15 @@ public:
 	void ListDeviceProfile(uint32_t deviceId);
 	void ListDeviceDisplayMode(uint32_t deviceId);
 	void ListDeviceConfig(uint32_t deviceId);
+	void ListDeviceStatus(uint32_t deviceId);
 
 private:
-	IDeckLinkIterator		*m_deckLinkIterator;
-	std::vector<IDeckLink*>	m_deckLinkDeviceList;
+	IDeckLinkIterator				*m_deckLinkIterator;
+	std::vector<IDeckLink*>		m_deckLinkDeviceList;
+	std::vector<const char*>	m_deckLinkDeviceName;
+
+	void ShowStatus(IDeckLinkStatus* deckLinkStatus, BMDDeckLinkStatusID statusID);
+	const char* GetDisplayModeNameFromEnum(BMDDisplayMode displayModeEnum);
 };
 
 

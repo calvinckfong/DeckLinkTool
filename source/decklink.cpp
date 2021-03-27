@@ -858,7 +858,7 @@ void Decklink::ShowConfig(IDeckLinkConfiguration* deckLinkConfiguration, BMDDeck
 			break;
 
 		case bmdDeckLinkConfigHD1080p24ToHD1080i5994Conversion:
-			printf(" %-30s: %s\n", "1080p24 to 1080i 59.94 conversion", BooleanString[!!boolVal]);
+			printf(" %-30s: %s\n", "1080 24p-to-59.94i conversion", BooleanString[!!boolVal]);
 			break;
 
 		case bmdDeckLinkConfig444SDIVideoOutput:

@@ -25,13 +25,17 @@ public:
 	void ListDeviceConfig(uint32_t deviceId);
 	void ListDeviceStatus(uint32_t deviceId);
 
+	void ScanSignal(uint32_t deviceId);
+
 private:
 	IDeckLinkIterator				*m_deckLinkIterator;
 	std::vector<IDeckLink*>		m_deckLinkDeviceList;
-	std::vector<const char*>	m_deckLinkDeviceName;
+	std::vector<const char*>	m_deckLinkDeviceModelName;
+	std::vector<const char*>	m_deckLinkDeviceDisplayName;
 
+	void ShowAttribute(IDeckLinkProfileAttributes* deckLinkAttributes, BMDDeckLinkAttributeID attributeID);
+	void ShowConfig(IDeckLinkConfiguration* deckLinkConfiguration, BMDDeckLinkConfigurationID configID);
 	void ShowStatus(IDeckLinkStatus* deckLinkStatus, BMDDeckLinkStatusID statusID);
-	const char* GetDisplayModeNameFromEnum(BMDDisplayMode displayModeEnum);
 };
 
 

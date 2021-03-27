@@ -29,6 +29,8 @@ int main(int argc, char** argv)
 		dl.ListDeviceConfig(deviceId);
 	else if (strcmp(argv[1], "-s")==0)
 		dl.ListDeviceStatus(deviceId);
+	else if (strcmp(argv[1], "--scan")==0)
+		dl.ScanSignal(deviceId);
 	else
 	{
 		std::cerr << "Unknown command " << argv[1] << std::endl;

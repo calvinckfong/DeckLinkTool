@@ -6,168 +6,8 @@
  */
 
 #include "decklink.h"
+#include "const.h"
 #include <iostream>
-#include <map>
-
-const char* BoonleanString[2] = {"FALSE", "TRUE"};
-
-const char* VideoConnectionString[7] = {
-		"Unspecified", 	"SDI", 	"HDMI", "Optical SDI",
-		"Component", 	"Composite", 	"SVideo"
-};
-
-std::map<BMDDisplayMode, const char*> DisplayModeString =
-{
-	// SD Modes
-	{bmdModeNTSC,     		"NTSC"		},
-	{bmdModeNTSC2398, 		"NTSC 23.98Hz"},
-	{bmdModePAL,				"PAL"			},
-	{bmdModeNTSCp,				"NTSC-P"		},
-	{bmdModePALp, 				"PAL-P"		},
-	// HD 1080 Modes
-	{bmdModeHD1080p2398,		"1080p 23.98Hz"},
-	{bmdModeHD1080p24,		"1080p 24Hz"},
-	{bmdModeHD1080p25,		"1080p 25Hz"},
-	{bmdModeHD1080p2997,		"1080p 29.97Hz"},
-	{bmdModeHD1080p30,		"1080p 30Hz"},
-	{bmdModeHD1080p4795,		"1080p 47.95Hz"},
-	{bmdModeHD1080p48,		"1080p 48Hz"},
-	{bmdModeHD1080p50,		"1080p 50Hz"},
-	{bmdModeHD1080p5994,		"1080p 59.94Hz"},
-	{bmdModeHD1080p6000,		"1080p 60Hz"},
-	{bmdModeHD1080p9590,		"1080p 95.90Hz"},
-	{bmdModeHD1080p96,		"1080p 96Hz"},
-	{bmdModeHD1080p100,		"1080p 100Hz"},
-	{bmdModeHD1080p11988,	"1080p 119.88Hz"},
-	{bmdModeHD1080p120,		"1080p 120Hz"},
-	{bmdModeHD1080i50,		"1080i 50Hz"},
-	{bmdModeHD1080i5994,		"1080i 59.94Hz"},
-	{bmdModeHD1080i6000,		"1080i 60Hz"},
-	// HD 720 Modes
-	{bmdModeHD720p50,			"720p 50Hz"},
-	{bmdModeHD720p5994,		"720p 59.94Hz"},
-	{bmdModeHD720p60,			"720p 60Hz"},
-	// 2K Modes
-	{bmdMode2k2398,			"2K 23.98Hz"},
-	{bmdMode2k24,				"2K 24Hz"},
-	{bmdMode2k25,				"2K 25Hz"},
-	// 2K DCI Modes
-	{bmdMode2kDCI2398,		"2KDCI 23.98Hz"},
-	{bmdMode2kDCI24,			"2KDCI 24Hz"},
-	{bmdMode2kDCI25,			"2KDCI 25Hz"},
-	{bmdMode2kDCI2997,		"2KDCI 29.97Hz"},
-	{bmdMode2kDCI30,			"2KDCI 30Hz"},
-	{bmdMode2kDCI4795,		"2KDCI 47.95Hz"},
-	{bmdMode2kDCI48,			"2KDCI 28Hz"},
-	{bmdMode2kDCI50,			"2KDCI 50Hz"},
-	{bmdMode2kDCI5994,		"2KDCI 59.94Hz"},
-	{bmdMode2kDCI60,			"2KDCI 60Hz"},
-	{bmdMode2kDCI9590,		"2KDCI 95.90Hz"},
-	{bmdMode2kDCI96,			"2KDCI 96Hz"},
-	{bmdMode2kDCI100,			"2KDCI 100Hz"},
-	{bmdMode2kDCI11988,		"2KDCI 119.88Hz"},
-	{bmdMode2kDCI120,			"2KDCI 120Hz"},
-	// 4K UHD Modes
-	{bmdMode4K2160p2398,		"2160p 23.98Hz"},
-	{bmdMode4K2160p24,		"2160p 24Hz"},
-	{bmdMode4K2160p25,		"2160p 25Hz"},
-	{bmdMode4K2160p2997,		"2160p 29.97Hz"},
-	{bmdMode4K2160p30,		"2160p 30Hz"},
-	{bmdMode4K2160p4795,		"2160p 47.95Hz"},
-	{bmdMode4K2160p48,		"2160p 48Hz"},
-	{bmdMode4K2160p50,		"2160p 50Hz"},
-	{bmdMode4K2160p5994,		"2160p 59.94Hz"},
-	{bmdMode4K2160p60,		"2160p 60Hz"},
-	{bmdMode4K2160p9590,		"2160p 95.90Hz"},
-	{bmdMode4K2160p96,		"2160p 96Hz"},
-	{bmdMode4K2160p100,		"2160p 100Hz"},
-	{bmdMode4K2160p11988,	"2160p 119.88Hz"},
-	{bmdMode4K2160p120,		"2160p 120Hz"},
-    // 4K DCI Modes
-	{bmdMode4kDCI2398,		"4KDCI 23.98Hz"},
-	{bmdMode4kDCI24,			"4KDCI 24Hz"},
-	{bmdMode4kDCI25,			"4KDCI 25Hz"},
-	{bmdMode4kDCI2997,		"4KDCI 29.97Hz"},
-	{bmdMode4kDCI30,			"4KDCI 30Hz"},
-	{bmdMode4kDCI4795,		"4KDCI 47.95Hz"},
-	{bmdMode4kDCI48,			"4KDCI 48Hz"},
-	{bmdMode4kDCI50,			"4KDCI 50Hz"},
-	{bmdMode4kDCI5994,		"4KDCI 59.94Hz"},
-	{bmdMode4kDCI60,			"4KDCI 60Hz"},
-	{bmdMode4kDCI9590,		"4KDCI 95.90Hz"},
-	{bmdMode4kDCI96,			"4KDCI 96Hz"},
-	{bmdMode4kDCI100,			"4KDCI 100Hz"},
-	{bmdMode4kDCI11988,		"4KDCI 119.88Hz"},
-	{bmdMode4kDCI120,			"4KDCI 120Hz"},
-    // 8K UHD Modes //
-	{bmdMode8K4320p2398,		"4320p 23.98Hz"},
-	{bmdMode8K4320p24,		"4320p 24Hz"},
-	{bmdMode8K4320p25,		"4320p 25Hz"},
-	{bmdMode8K4320p2997,		"4320p 29.97Hz"},
-	{bmdMode8K4320p30,		"4320p 30Hz"},
-	{bmdMode8K4320p4795,		"4320p 47.95Hz"},
-	{bmdMode8K4320p48,		"4320p 48Hz"},
-	{bmdMode8K4320p50,		"4320p 50Hz"},
-	{bmdMode8K4320p5994,		"4320p 59.94Hz"},
-	{bmdMode8K4320p60,		"4320p 60Hz"},
-    // 8K DCI Modes
-	{bmdMode8kDCI2398,		"8KDCI 23.98Hz"},
-	{bmdMode8kDCI24,			"8KDCI 24Hz"},
-	{bmdMode8kDCI25,			"8KDCI 25Hz"},
-	{bmdMode8kDCI2997,		"8KDCI 29.97Hz"},
-	{bmdMode8kDCI30,			"8KDCI 30Hz"},
-	{bmdMode8kDCI4795,		"8KDCI 47.95Hz"},
-	{bmdMode8kDCI48,			"8KDCI 48Hz"},
-	{bmdMode8kDCI50,			"8KDCI 50Hz"},
-	{bmdMode8kDCI5994,		"8KDCI 59.94Hz"},
-	{bmdMode8kDCI60,			"8KDCI 60Hz"},
-   // PC Modes
-	{bmdMode640x480p60,		"640x480 60Hz"},
-	{bmdMode800x600p60,		"800x600 60Hz"},
-	{bmdMode1440x900p50,		"1440x900 50Hz"},
-	{bmdMode1440x900p60,		"1440x900 60Hz"},
-	{bmdMode1440x1080p50,	"1440x1080 50Hz"},
-	{bmdMode1440x1080p60,	"1440x1080 60Hz"},
-	{bmdMode1600x1200p50,	"1600x1200 50Hz"},
-	{bmdMode1600x1200p60,	"1600x1200 60Hz"},
-	{bmdMode1920x1200p50,	"1920x1200 50Hz"},
-	{bmdMode1920x1200p60,	"1920x1280 60Hz"},
-	{bmdMode1920x1440p50,	"1920x1440 50Hz"},
-	{bmdMode1920x1440p60,	"1920x1440 60Hz"},
-	{bmdMode2560x1440p50,	"2560x1440 50Hz"},
-	{bmdMode2560x1440p60,	"2560x1440 60Hz"},
-	{bmdMode2560x1600p50,	"2560x1600 50Hz"},
-	{bmdMode2560x1600p60,	"2560x1600 60Hz"},
-	// RAW Modes for Cintel (input only)
-	{bmdModeCintelRAW,		"Cintel Raw"},
-	{bmdModeCintelCompressedRAW,		"Cintel Compressed Raw"},
-	// Special Modes
-	{bmdModeUnknown,		"Unknown"},
-};
-
-std::map<BMDPixelFormat, const char*> PixelFormatString =
-{
-	{bmdFormatUnspecified,	"Unspecified"},
-	{bmdFormat8BitYUV, 		"YUV 8-bit"},
-	{bmdFormat10BitYUV, 		"YUV 10-bit"},
-	{bmdFormat8BitARGB, 		"ARGB 8-bit"},
-	{bmdFormat8BitBGRA, 		"BGRA 8-bit"},
-	{bmdFormat10BitRGB, 		"RGB 10-bit"},
-	{bmdFormat12BitRGB, 		"RGB 12-bit"},
-	{bmdFormat12BitRGBLE,	"RGB 12-bit Little-endian"},
-	{bmdFormat10BitRGBXLE, 	"RGB 10-bit Little-endian SMPTE levels"},
-	{bmdFormat10BitRGBX, 	"RGB 10-bit Big-endian SMPTE levels"},
-	{bmdFormatH265, 			"HEVC"},
-	{bmdFormatDNxHR, 			"DNxHR"},
-	{bmdFormat12BitRAWGRBG, "12-bit Raw data GRBG"},
-	{bmdFormat12BitRAWJPEG, "12-bit Raw data JPEG"}
-};
-
-std::map<BMDPixelFormat, const char*> PanelTypeString =
-{
-	{bmdPanelNotDetected, 				""},
-	{bmdPanelTeranexMiniSmartPanel,	""},
-};
 
 Decklink::Decklink() :
 	m_deckLinkIterator(NULL)
@@ -212,10 +52,13 @@ bool Decklink::Init()
 	while (m_deckLinkIterator->Next(&deckLink) == S_OK)
 	{
 		char *modelName;
+		char *displayName;
 		deckLink->GetModelName((const char**)&modelName);
+		deckLink->GetDisplayName((const char**)&displayName);
 		//std::cout << deviceCount << ": " << modelName << std::endl;
 		m_deckLinkDeviceList.push_back(deckLink);
-		m_deckLinkDeviceName.push_back(modelName);
+		m_deckLinkDeviceModelName.push_back(modelName);
+		m_deckLinkDeviceDisplayName.push_back(displayName);
 
 		deviceCount++;
 	}
@@ -228,12 +71,10 @@ bool Decklink::Init()
 void Decklink::ListDevices()
 {
 	std::cout << "====== Device List ======" << std::endl;
+	printf("ID\tModel name\tDisplay name\n");
 	for (size_t i=0; i<m_deckLinkDeviceList.size(); i++)
 	{
-		//char *modelName;
-		//m_deckLinkDeviceList[i]->GetModelName((const char**)&modelName);
-		//printf("% 2d\t%s\n", i, modelName);
-		printf("%2d\t%s\n", i, m_deckLinkDeviceName[i]);
+		printf("%2ld\t%s\t%s\n", i, m_deckLinkDeviceModelName[i], m_deckLinkDeviceDisplayName[i]);
 	}
 
 	std::cout << std::endl;
@@ -249,51 +90,60 @@ void Decklink::ListDeviceProfile(uint32_t deviceId)
 		result = m_deckLinkDeviceList[deviceId]->QueryInterface(IID_IDeckLinkProfileAttributes, (void**)&deckLinkAttributes);
 		if (result==S_OK)
 		{
-			int64_t inPorts, outPorts;
-			int64_t videoIOSupport;
-			int64_t duplex;
-			bool supportHDRMetadata;
-			bool supportColorspaceMetadata;
+			std::cout << "Device " << deviceId << ": " << m_deckLinkDeviceDisplayName[deviceId] << std::endl;
 
-			std::cout << "Device " << deviceId << ": " << m_deckLinkDeviceName[deviceId] << std::endl;
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkProfileID);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkDeviceInterface);
 
-			deckLinkAttributes->GetInt(BMDDeckLinkVideoInputConnections, &inPorts);
-			printf(" %-30s: ", "Input Port");
-			if (inPorts&bmdVideoConnectionSDI) 			std::cout << "[SDI] ";
-			if (inPorts&bmdVideoConnectionHDMI)			std::cout << "[HDMI] ";
-			if (inPorts&bmdVideoConnectionOpticalSDI) 	std::cout << "[Optical SDI] ";
-			if (inPorts&bmdVideoConnectionComponent)	std::cout << "[Component] ";
-			if (inPorts&bmdVideoConnectionComposite)	std::cout << "[Composite] ";
-			if (inPorts&bmdVideoConnectionSVideo) 		std::cout << "[SVideo] ";
-			std::cout << std::endl;
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkNumberOfSubDevices);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkSubDeviceIndex);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkPersistentID);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkDeviceGroupID);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkTopologicalID);
 
-			deckLinkAttributes->GetInt(BMDDeckLinkVideoOutputConnections, &outPorts);
-			printf(" %-30s: ", "Output Port");
-			if (outPorts&bmdVideoConnectionSDI) 		std::cout << "[SDI] ";
-			if (outPorts&bmdVideoConnectionHDMI)		std::cout << "[HDMI] ";
-			if (outPorts&bmdVideoConnectionOpticalSDI)	std::cout << "[Optical SDI] ";
-			if (outPorts&bmdVideoConnectionComponent)	std::cout << "[Component] ";
-			if (outPorts&bmdVideoConnectionComposite)	std::cout << "[Composite] ";
-			if (outPorts&bmdVideoConnectionSVideo)		std::cout << "[SVideo] ";
-			std::cout << std::endl;
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkVideoIOSupport);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkVideoInputConnections);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkVideoOutputConnections);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkVideoInputGainMinimum);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkVideoInputGainMaximum);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkVideoOutputGainMinimum);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkVideoOutputGainMaximum);
 
-			deckLinkAttributes->GetInt(BMDDeckLinkVideoIOSupport, &videoIOSupport);
-			printf(" %-30s: %s\n", "Capture",  BoonleanString[!!(videoIOSupport&bmdDeviceSupportsCapture)]);
-			printf(" %-30s: %s\n", "Playback", BoonleanString[!!(videoIOSupport&bmdDeviceSupportsPlayback)]);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkAudioInputConnections);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkAudioOutputConnections);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkMaximumAudioChannels);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkMaximumAnalogAudioInputChannels);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkMaximumAnalogAudioOutputChannels);
 
-			deckLinkAttributes->GetInt(BMDDeckLinkDuplex, &duplex);
-			printf(" %-30s: ", "Duplex");
-			if (duplex == bmdDuplexFull) 			std::cout << "Full Duplex";
-			else if (duplex == bmdDuplexHalf) 		std::cout << "Half Duplex";
-			else if (duplex == bmdDuplexSimplex)	std::cout << "Simplex";
-			else if (duplex == bmdDuplexInactive)	std::cout << "Inactive";
-			std::cout << std::endl;
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkAudioInputRCAChannelCount);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkAudioInputXLRChannelCount);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkAudioOutputRCAChannelCount);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkAudioOutputXLRChannelCount);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkMicrophoneInputGainMinimum);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkMicrophoneInputGainMaximum);
 
-			deckLinkAttributes->GetFlag(BMDDeckLinkSupportsHDRMetadata, &supportHDRMetadata);
-			printf(" %-30s: %s\n", "Support HDR Metadata", BoonleanString[supportHDRMetadata]);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkDuplex);
 
-			deckLinkAttributes->GetFlag(BMDDeckLinkSupportsColorspaceMetadata, &supportColorspaceMetadata);
-			printf(" %-30s: %s\n", "Support Colorspace Metadata", BoonleanString[supportColorspaceMetadata]);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkHasReferenceInput);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkHasSerialPort);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkHasAnalogVideoOutputGain);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkHasVideoInputAntiAliasingFilter);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkHasBypass);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkHasLTCTimecodeInput);
+
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkSupportsInputFormatDetection);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkSupportsHDRMetadata);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkSupportsColorspaceMetadata);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkSupportsHDMITimecode);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkSupportsDualLinkSDI);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkSupportsQuadLinkSDI);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkSupportsIdleOutput);
+
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkSerialPortDeviceName);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkVendorName);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkDisplayName);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkModelName);
+			ShowAttribute(deckLinkAttributes, BMDDeckLinkDeviceHandle);
 
 			std::cout << std::endl;
 		}
@@ -314,7 +164,7 @@ void Decklink::ListDeviceDisplayMode(uint32_t deviceId)
 
 	if (deviceId<m_deckLinkDeviceList.size())
 	{
-		std::cout << "Device " << deviceId << ": " << m_deckLinkDeviceName[deviceId] << std::endl;
+		std::cout << "Device " << deviceId << ": " << m_deckLinkDeviceDisplayName[deviceId] << std::endl;
 
 		result = m_deckLinkDeviceList[deviceId]->QueryInterface(IID_IDeckLinkInput, (void**)&deckLinkInput);
 		if (result==S_OK)
@@ -377,11 +227,52 @@ void Decklink::ListDeviceConfig(uint32_t deviceId)
 
 	if (deviceId<m_deckLinkDeviceList.size())
 	{
-		std::cout << "Device " << deviceId << ": " << m_deckLinkDeviceName[deviceId] << std::endl;
+		std::cout << "Device " << deviceId << ": " << m_deckLinkDeviceDisplayName[deviceId] << std::endl;
 
 		result = m_deckLinkDeviceList[deviceId]->QueryInterface(IID_IDeckLinkConfiguration, (void**)&deckLinkConfiguration);
 		if (result==S_OK)
 		{
+#if 1
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigSwapSerialRxTx);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigDeckControlConnection);
+
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigHDMI3DPackingFormat);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigBypass);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigClockTimingAdjustment);
+
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigVideoInputConnection);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigVideoInputScanning);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigVideoInputConversionMode);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigAnalogVideoInputFlags);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigCapture1080pAsPsF);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigCapturePassThroughMode);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigCaptureGroup);
+
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigFieldFlickerRemoval);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigHD1080p24ToHD1080i5994Conversion);
+
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigVideoOutputConnection);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigDefaultVideoOutputMode);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigDefaultVideoOutputModeFlags);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigVideoOutputConversionMode);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigRec2020Output);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfig444SDIVideoOutput);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigBlackVideoOutputDuringCapture);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigLowLatencyVideoOutput);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigOutput1080pAsPsF);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigVideoOutputIdleOperation);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigSDIOutputLinkConfiguration);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigHDMITimecodePacking);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigPlaybackGroup);
+
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigDeviceInformationLabel);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigDeviceInformationSerialNumber);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigDeviceInformationCompany);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigDeviceInformationPhone);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigDeviceInformationEmail);
+			ShowConfig(deckLinkConfiguration, bmdDeckLinkConfigDeviceInformationDate);
+
+#else
 			int64_t videoInputConnection;
 			int64_t videoOutputConnection;
 
@@ -401,6 +292,7 @@ void Decklink::ListDeviceConfig(uint32_t deviceId)
 				if (videoOutputConnection & (1<<i))
 					std::cout << VideoConnectionString[i] << " ";
 			}
+#endif
 			std::cout << std::endl << std::endl;
 		}
 	}
@@ -417,38 +309,784 @@ void Decklink::ListDeviceStatus(uint32_t deviceId)
 
 	if (deviceId<m_deckLinkDeviceList.size())
 	{
-		std::cout << "Device " << deviceId << ": " << m_deckLinkDeviceName[deviceId] << std::endl;
+		std::cout << "Device " << deviceId << ": " << m_deckLinkDeviceDisplayName[deviceId] << std::endl;
 
 		result = m_deckLinkDeviceList[deviceId]->QueryInterface(IID_IDeckLinkStatus, (void**)&deckLinkStatus);
 		if (result==S_OK)
 		{
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusBusy);
-			std::cout << std::endl;
+			ShowStatus(deckLinkStatus, bmdDeckLinkStatusPCIExpressLinkWidth);
+			ShowStatus(deckLinkStatus, bmdDeckLinkStatusPCIExpressLinkSpeed);
+			ShowStatus(deckLinkStatus, bmdDeckLinkStatusInterchangeablePanelType);
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusDetectedVideoInputMode);
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusDetectedVideoInputFlags);
-			std::cout << std::endl;
+			ShowStatus(deckLinkStatus, bmdDeckLinkStatusVideoInputSignalLocked);
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusCurrentVideoInputMode);
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusCurrentVideoInputPixelFormat);
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusCurrentVideoInputFlags);
-			std::cout << std::endl;
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusCurrentVideoOutputMode);
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusCurrentVideoOutputFlags);
-			std::cout << std::endl;
-			ShowStatus(deckLinkStatus, bmdDeckLinkStatusPCIExpressLinkWidth);
-			ShowStatus(deckLinkStatus, bmdDeckLinkStatusPCIExpressLinkSpeed);
-			std::cout << std::endl;
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusLastVideoOutputPixelFormat);
-			std::cout << std::endl;
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusReferenceSignalMode);
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusReferenceSignalFlags);
-			std::cout << std::endl;
-			ShowStatus(deckLinkStatus, bmdDeckLinkStatusInterchangeablePanelType);
-			ShowStatus(deckLinkStatus, bmdDeckLinkStatusDeviceTemperature);
-			std::cout << std::endl;
-			ShowStatus(deckLinkStatus, bmdDeckLinkStatusVideoInputSignalLocked);
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusReferenceSignalLocked);
+			ShowStatus(deckLinkStatus, bmdDeckLinkStatusDeviceTemperature);
 			ShowStatus(deckLinkStatus, bmdDeckLinkStatusReceivedEDID);
 			std::cout << std::endl;
+		}
+	}
+}
+
+void Decklink::ScanSignal(uint32_t deviceId)
+{
+	HRESULT result;
+	IDeckLinkProfileAttributes* deckLinkAttributes = NULL;
+	IDeckLink* deckLinkInput = NULL;
+	bool supportIFD;
+
+	if (deviceId<m_deckLinkDeviceList.size())
+	{
+		std::cout << "Device " << deviceId << ": " << m_deckLinkDeviceDisplayName[deviceId] << std::endl;
+
+		result = m_deckLinkDeviceList[deviceId]->QueryInterface(IID_IDeckLinkProfileAttributes, (void**)&deckLinkAttributes);
+		if (result != S_OK)
+	    {
+			fprintf(stderr, "Unable to open profile attribute interface (0x%08x)\n", result);
+			goto fail;
+		}
+
+		result = deckLinkAttributes->GetFlag(BMDDeckLinkSupportsInputFormatDetection, &supportIFD);
+		if ((result != S_OK) || (supportIFD == false))
+		{
+			fprintf(stderr, "Device does not support automatic mode detection\n");
+			goto fail;
+		}
+
+		result = m_deckLinkDeviceList[deviceId]->QueryInterface(IID_IDeckLinkInput, (void**)&deckLinkInput);
+		if (result != S_OK)
+		{
+			fprintf(stderr, "Could not obtain the IDeckLinkInput interface - result = %08x\n", result);
+			goto fail;
+		}
+
+		// Todo
+
+fail:
+		;
+	}
+}
+
+void Decklink::ShowAttribute(IDeckLinkProfileAttributes* deckLinkAttributes, BMDDeckLinkAttributeID attributeID)
+{
+	HRESULT	result;
+	bool 		boolVal = false;
+	int64_t	intVal = 0;
+	double	floatVal = 0.0;
+	const char*	stringVal;
+
+	switch (attributeID) {
+	// Flags
+	case BMDDeckLinkSupportsInternalKeying:
+	case BMDDeckLinkSupportsExternalKeying:
+	case BMDDeckLinkSupportsInputFormatDetection:
+	case BMDDeckLinkHasReferenceInput:
+	case BMDDeckLinkHasSerialPort:
+	case BMDDeckLinkHasAnalogVideoOutputGain:
+	case BMDDeckLinkCanOnlyAdjustOverallVideoOutputGain:
+	case BMDDeckLinkHasVideoInputAntiAliasingFilter:
+	case BMDDeckLinkHasBypass:
+	case BMDDeckLinkSupportsClockTimingAdjustment:
+	case BMDDeckLinkSupportsFullFrameReferenceInputTimingOffset:
+	case BMDDeckLinkSupportsSMPTELevelAOutput:
+	case BMDDeckLinkSupportsDualLinkSDI:
+	case BMDDeckLinkSupportsQuadLinkSDI:
+	case BMDDeckLinkSupportsIdleOutput:
+	case BMDDeckLinkVANCRequires10BitYUVVideoFrames:
+	case BMDDeckLinkHasLTCTimecodeInput:
+	case BMDDeckLinkSupportsHDRMetadata:
+	case BMDDeckLinkSupportsColorspaceMetadata:
+	case BMDDeckLinkSupportsHDMITimecode:
+	case BMDDeckLinkSupportsHighFrameRateTimecode:
+	case BMDDeckLinkSupportsSynchronizeToCaptureGroup:
+	case BMDDeckLinkSupportsSynchronizeToPlaybackGroup:
+		result = deckLinkAttributes->GetFlag(attributeID, &boolVal);
+		break;
+
+		// Integers
+	case BMDDeckLinkMaximumAudioChannels:
+	case BMDDeckLinkMaximumAnalogAudioInputChannels:
+	case BMDDeckLinkMaximumAnalogAudioOutputChannels:
+	case BMDDeckLinkNumberOfSubDevices:
+	case BMDDeckLinkSubDeviceIndex:
+	case BMDDeckLinkPersistentID:
+	case BMDDeckLinkDeviceGroupID:
+	case BMDDeckLinkTopologicalID:
+	case BMDDeckLinkVideoOutputConnections:
+	case BMDDeckLinkVideoInputConnections:
+	case BMDDeckLinkAudioOutputConnections:
+	case BMDDeckLinkAudioInputConnections:
+	case BMDDeckLinkVideoIOSupport:
+	case BMDDeckLinkDeckControlConnections:
+	case BMDDeckLinkDeviceInterface:
+	case BMDDeckLinkAudioInputRCAChannelCount:
+	case BMDDeckLinkAudioInputXLRChannelCount:
+	case BMDDeckLinkAudioOutputRCAChannelCount:
+	case BMDDeckLinkAudioOutputXLRChannelCount:
+	case BMDDeckLinkProfileID:
+	case BMDDeckLinkDuplex:
+		result = deckLinkAttributes->GetInt(attributeID, &intVal);
+		break;
+
+		// Floats
+	case BMDDeckLinkVideoInputGainMinimum:
+	case BMDDeckLinkVideoInputGainMaximum:
+	case BMDDeckLinkVideoOutputGainMinimum:
+	case BMDDeckLinkVideoOutputGainMaximum:
+	case BMDDeckLinkMicrophoneInputGainMinimum:
+	case BMDDeckLinkMicrophoneInputGainMaximum:
+		result = deckLinkAttributes->GetFloat(attributeID, &floatVal);
+		break;
+
+		// Strings
+	case BMDDeckLinkSerialPortDeviceName:
+	case BMDDeckLinkVendorName:
+	case BMDDeckLinkDisplayName:
+	case BMDDeckLinkModelName:
+	case BMDDeckLinkDeviceHandle:
+		result = deckLinkAttributes->GetString(attributeID, &stringVal);
+		break;
+
+	default:
+		return;
+	}
+
+	if (result == S_OK)
+	{
+		switch (attributeID) {
+		// Flags
+		case BMDDeckLinkSupportsInternalKeying:
+			printf(" %-30s: %s\n", "Support Internal Keying", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsExternalKeying:
+			printf(" %-30s: %s\n", "Support External Keying", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsInputFormatDetection:
+			printf(" %-30s: %s\n", "Support Input Format Detect", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsClockTimingAdjustment:
+			printf(" %-30s: %s\n", "Support Clock Timing Adjust", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsFullFrameReferenceInputTimingOffset:
+			printf(" %-30s: %s\n", "Support FF Ref Input Timing", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsSMPTELevelAOutput:
+			printf(" %-30s: %s\n", "Support SMPTE Level A Output", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsDualLinkSDI:
+			printf(" %-30s: %s\n", "Support Dual Link SDI", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsQuadLinkSDI:
+			printf(" %-30s: %s\n", "Support Quad Link SDI", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsIdleOutput:
+			printf(" %-30s: %s\n", "Support Idle Output", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsHDRMetadata:
+			printf(" %-30s: %s\n", "Support HDR Metadata", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsColorspaceMetadata:
+			printf(" %-30s: %s\n", "Support Colorspace Metadata", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsHDMITimecode:
+			printf(" %-30s: %s\n", "Support HDMI Timecode", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsHighFrameRateTimecode:
+			printf(" %-30s: %s\n", "Support HFR Timecode", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsSynchronizeToCaptureGroup:
+			printf(" %-30s: %s\n", "Support Synchronize to Capture Group", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkSupportsSynchronizeToPlaybackGroup:
+			printf(" %-30s: %s\n", "Support Synchronize to Playback Group", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkHasReferenceInput:
+			printf(" %-30s: %s\n", "Has Ref Input", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkHasSerialPort:
+			printf(" %-30s: %s\n", "Has Serial Port", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkHasAnalogVideoOutputGain:
+			printf(" %-30s: %s\n", "Has Analog Video Output Gain", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkHasVideoInputAntiAliasingFilter:
+			printf(" %-30s: %s\n", "Has Video Input AA Filter", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkHasBypass:
+			printf(" %-30s: %s\n", "Has Bypass", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkHasLTCTimecodeInput:
+			printf(" %-30s: %s\n", "Has LTC Timecode Input", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkCanOnlyAdjustOverallVideoOutputGain:
+			printf(" %-30s: %s\n", "Can Only Adjust Overall Video Output Gain", BooleanString[!!boolVal]);
+			break;
+
+		case BMDDeckLinkVANCRequires10BitYUVVideoFrames:
+			printf(" %-30s: %s\n", "VANC Requires 10-Bit YUV", BooleanString[!!boolVal]);
+			break;
+
+
+			// Integers
+		case BMDDeckLinkMaximumAudioChannels:
+			printf(" %-30s: %ld\n", "Max Audio Channels", intVal);
+			break;
+
+		case BMDDeckLinkMaximumAnalogAudioInputChannels:
+			printf(" %-30s: %ld\n", "Max Analog Audio Input Channels", intVal);
+			break;
+
+		case BMDDeckLinkMaximumAnalogAudioOutputChannels:
+			printf(" %-30s: %ld\n", "Max Analog Audio Output Channels", intVal);
+			break;
+
+		case BMDDeckLinkNumberOfSubDevices:
+			printf(" %-30s: %ld\n", "# of Sub-devices", intVal);
+			break;
+
+		case BMDDeckLinkSubDeviceIndex:
+			printf(" %-30s: %ld\n", "Sub-device index", intVal);
+			break;
+
+		case BMDDeckLinkPersistentID:
+			printf(" %-30s: %ld\n", "Persistent ID", intVal);
+			break;
+
+		case BMDDeckLinkDeviceGroupID:
+			printf(" %-30s: %ld\n", "Device Group ID", intVal);
+			break;
+
+		case BMDDeckLinkTopologicalID:
+			printf(" %-30s: 0x%08x\n", "Topological ID", intVal);
+			break;
+
+
+		case BMDDeckLinkVideoOutputConnections:
+			printf(" %-30s: ", "Video Output Connection");
+			if (intVal==0)	std::cout << "[Unspecified]";
+			else {
+				for (size_t i=0; i<6; i++)
+					if (intVal & (1<<i))	std::cout << VideoConnectionString[i];
+			}
+			std::cout << std::endl;
+			break;
+
+		case BMDDeckLinkVideoInputConnections:
+			printf(" %-30s: ", "Video Input Connection");
+			if (intVal==0)	std::cout << "[Unspecified]";
+			else {
+				for (size_t i=0; i<6; i++)
+					if (intVal & (1<<i))	std::cout << VideoConnectionString[i];
+			}
+			std::cout << std::endl;
+			break;
+
+		case BMDDeckLinkAudioOutputConnections:
+			printf(" %-30s: ", "Audio Output Connection");
+			if (intVal==0)	std::cout << "[Unspecified]";
+			else {
+				for (size_t i=0; i<6; i++)
+					if (intVal & (1<<i))	std::cout << AudioConnectionString[i];
+			}
+			std::cout << std::endl;
+			break;
+
+		case BMDDeckLinkAudioInputConnections:
+			printf(" %-30s: ", "Audio Intput Connection");
+			if (intVal==0)	std::cout << "[Unspecified]";
+			else {
+				for (size_t i=0; i<6; i++)
+					if (intVal & (1<<i))	std::cout << AudioConnectionString[i];
+			}
+			std::cout << std::endl;
+			break;
+
+		case BMDDeckLinkVideoIOSupport:
+			printf(" %-30s: %s\n", "Allow Capture",  BooleanString[!!(intVal&bmdDeviceSupportsCapture)]);
+			printf(" %-30s: %s\n", "Aloow Playback", BooleanString[!!(intVal&bmdDeviceSupportsPlayback)]);
+			break;
+
+		case BMDDeckLinkDeckControlConnections:
+			printf(" %-30s: ", "Control Connection");
+			if ( intVal & bmdDeckControlConnectionRS422Remote1) std::cout << "RS-422 Remote 1 ";
+			if ( intVal & bmdDeckControlConnectionRS422Remote2) std::cout << "RS-422 Remote 2 ";
+			std::cout << std::endl;
+			break;
+
+		case BMDDeckLinkDeviceInterface:
+			printf(" %-30s: %s\n", "Device Interface",  DeviceInterfaceString[intVal]);
+			break;
+
+		case BMDDeckLinkAudioInputRCAChannelCount:
+			printf(" %-30s: %ld\n", "#Audio Input RCA Channel",  intVal);
+			break;
+
+		case BMDDeckLinkAudioInputXLRChannelCount:
+			printf(" %-30s: %ld\n", "#Audio Input XLR Channel",  intVal);
+			break;
+
+		case BMDDeckLinkAudioOutputRCAChannelCount:
+			printf(" %-30s: %ld\n", "#Audio Output RCA Channel",  intVal);
+			break;
+
+		case BMDDeckLinkAudioOutputXLRChannelCount:
+			printf(" %-30s: %ld\n", "#Audio Output XLR Channel",  intVal);
+			break;
+
+		case BMDDeckLinkProfileID:
+			if (intVal!=0)
+				printf(" %-30s: %s\n", "ProfileID",  ProfileIDString[intVal]);
+			break;
+
+		case BMDDeckLinkDuplex:
+			printf(" %-30s: %s\n", "Duplex",  DuplexModeString[intVal]);
+			break;
+
+			// Floats
+		case BMDDeckLinkVideoInputGainMinimum:
+			printf(" %-30s: %lf\n", "Min Video Input Gain",  floatVal);
+			break;
+
+		case BMDDeckLinkVideoInputGainMaximum:
+			printf(" %-30s: %lf\n", "Max Video Input Gain",  floatVal);
+			break;
+
+		case BMDDeckLinkVideoOutputGainMinimum:
+			printf(" %-30s: %lf\n", "Min Video Output Gain",  floatVal);
+			break;
+
+		case BMDDeckLinkVideoOutputGainMaximum:
+			printf(" %-30s: %lf\n", "Max Video Output Gain",  floatVal);
+			break;
+
+		case BMDDeckLinkMicrophoneInputGainMinimum:
+			printf(" %-30s: %lf\n", "Min Mic Input Gain",  floatVal);
+			break;
+
+		case BMDDeckLinkMicrophoneInputGainMaximum:
+			printf(" %-30s: %lf\n", "Max Mic Output Gain",  floatVal);
+			break;
+
+			// Strings
+		case BMDDeckLinkSerialPortDeviceName:
+			printf(" %-30s: %s\n", "Serial Port Device Name",  stringVal);
+			break;
+
+		case BMDDeckLinkVendorName:
+			printf(" %-30s: %s\n", "Vendor Name",  stringVal);
+			break;
+
+		case BMDDeckLinkDisplayName:
+			printf(" %-30s: %s\n", "Display Name",  stringVal);
+			break;
+
+		case BMDDeckLinkModelName:
+			printf(" %-30s: %s\n", "Model Name",  stringVal);
+			break;
+
+		case BMDDeckLinkDeviceHandle:
+			printf(" %-30s: %s\n", "Device Handle",  stringVal);
+			break;
+
+		default:
+			break;
+		}
+	}
+}
+
+void Decklink::ShowConfig(IDeckLinkConfiguration* deckLinkConfiguration, BMDDeckLinkConfigurationID configID)
+{
+	HRESULT	result = -1;
+	bool 		boolVal = false;
+	int64_t	intVal = 0;
+	double	floatVal = 0.0;
+	const char*	stringVal;
+
+	switch (configID) {
+	// Serial port Flags
+	case bmdDeckLinkConfigSwapSerialRxTx:
+	// Audio Input/Output Flags
+	case bmdDeckLinkConfigAnalogAudioConsumerLevels:
+	// Video output flags
+	case bmdDeckLinkConfigFieldFlickerRemoval:
+	case bmdDeckLinkConfigHD1080p24ToHD1080i5994Conversion:
+	case bmdDeckLinkConfig444SDIVideoOutput:
+	case bmdDeckLinkConfigBlackVideoOutputDuringCapture:
+	case bmdDeckLinkConfigLowLatencyVideoOutput:
+	case bmdDeckLinkConfigDownConversionOnAllAnalogOutput:
+	case bmdDeckLinkConfigSMPTELevelAOutput:
+	case bmdDeckLinkConfigRec2020Output:
+	case bmdDeckLinkConfigQuadLinkSDIVideoOutputSquareDivisionSplit:
+	case bmdDeckLinkConfigOutput1080pAsPsF:
+	// Video Input Flags
+	case bmdDeckLinkConfigVideoInputScanning:
+	case bmdDeckLinkConfigUseDedicatedLTCInput:
+	case bmdDeckLinkConfigSDIInput3DPayloadOverride:
+	case bmdDeckLinkConfigCapture1080pAsPsF:
+	// Audio Input Flags
+	case bmdDeckLinkConfigMicrophonePhantomPower:
+		result = deckLinkConfiguration->GetFlag(configID, &boolVal);
+		break;
+
+	// Video Input/Output Integers
+	case bmdDeckLinkConfigHDMI3DPackingFormat:
+	case bmdDeckLinkConfigBypass:
+	case bmdDeckLinkConfigClockTimingAdjustment:
+	// Video Output Integers
+	case bmdDeckLinkConfigVideoOutputConnection:
+	case bmdDeckLinkConfigVideoOutputConversionMode:
+	case bmdDeckLinkConfigAnalogVideoOutputFlags:
+	case bmdDeckLinkConfigReferenceInputTimingOffset:
+	case bmdDeckLinkConfigVideoOutputIdleOperation:
+	case bmdDeckLinkConfigDefaultVideoOutputMode:
+	case bmdDeckLinkConfigDefaultVideoOutputModeFlags:
+	case bmdDeckLinkConfigSDIOutputLinkConfiguration:
+	case bmdDeckLinkConfigHDMITimecodePacking:
+	case bmdDeckLinkConfigPlaybackGroup:
+	// Video Input Integers
+	case bmdDeckLinkConfigVideoInputConnection:
+	case bmdDeckLinkConfigAnalogVideoInputFlags:
+	case bmdDeckLinkConfigVideoInputConversionMode:
+	case bmdDeckLinkConfig32PulldownSequenceInitialTimecodeFrame:
+	case bmdDeckLinkConfigVANCSourceLine1Mapping:
+	case bmdDeckLinkConfigVANCSourceLine2Mapping:
+	case bmdDeckLinkConfigVANCSourceLine3Mapping:
+	case bmdDeckLinkConfigCapturePassThroughMode:
+	case bmdDeckLinkConfigCaptureGroup:
+	// Audio Input Integers
+	case bmdDeckLinkConfigAudioInputConnection:
+	// Audio Output Integers
+	case bmdDeckLinkConfigAudioOutputAESAnalogSwitch:
+	// Deck Control Integers
+	case bmdDeckLinkConfigDeckControlConnection:
+		result = deckLinkConfiguration->GetInt(configID, &intVal);
+		break;
+
+	// Video Output Floats
+	case bmdDeckLinkConfigVideoOutputComponentLumaGain:
+	case bmdDeckLinkConfigVideoOutputComponentChromaBlueGain:
+	case bmdDeckLinkConfigVideoOutputComponentChromaRedGain:
+	case bmdDeckLinkConfigVideoOutputCompositeLumaGain:
+	case bmdDeckLinkConfigVideoOutputCompositeChromaGain:
+	case bmdDeckLinkConfigVideoOutputSVideoLumaGain:
+	case bmdDeckLinkConfigVideoOutputSVideoChromaGain:
+	// Video Input Floats
+	case bmdDeckLinkConfigVideoInputComponentLumaGain:
+	case bmdDeckLinkConfigVideoInputComponentChromaBlueGain:
+	case bmdDeckLinkConfigVideoInputComponentChromaRedGain:
+	case bmdDeckLinkConfigVideoInputCompositeLumaGain:
+	case bmdDeckLinkConfigVideoInputCompositeChromaGain:
+	case bmdDeckLinkConfigVideoInputSVideoLumaGain:
+	case bmdDeckLinkConfigVideoInputSVideoChromaGain:
+	// Audio Input Floats
+	case bmdDeckLinkConfigAnalogAudioInputScaleChannel1:
+	case bmdDeckLinkConfigAnalogAudioInputScaleChannel2:
+	case bmdDeckLinkConfigAnalogAudioInputScaleChannel3:
+	case bmdDeckLinkConfigAnalogAudioInputScaleChannel4:
+	case bmdDeckLinkConfigDigitalAudioInputScale:
+	case bmdDeckLinkConfigMicrophoneInputGain:
+	// Audio Output Floats
+	case bmdDeckLinkConfigAnalogAudioOutputScaleChannel1:
+	case bmdDeckLinkConfigAnalogAudioOutputScaleChannel2:
+	case bmdDeckLinkConfigAnalogAudioOutputScaleChannel3:
+	case bmdDeckLinkConfigAnalogAudioOutputScaleChannel4:
+	case bmdDeckLinkConfigDigitalAudioOutputScale:
+	case bmdDeckLinkConfigHeadphoneVolume:
+		result = deckLinkConfiguration->GetFloat(configID, &floatVal);
+		break;
+
+	// Device Information Strings
+	case bmdDeckLinkConfigDeviceInformationLabel:
+	case bmdDeckLinkConfigDeviceInformationSerialNumber:
+	case bmdDeckLinkConfigDeviceInformationCompany:
+	case bmdDeckLinkConfigDeviceInformationPhone:
+	case bmdDeckLinkConfigDeviceInformationEmail:
+	case bmdDeckLinkConfigDeviceInformationDate:
+		result = deckLinkConfiguration->GetString(configID, &stringVal);
+		break;
+
+	default:
+		break;
+	}
+
+	if (result == S_OK)
+	{
+		switch (configID) {
+		// Serial port Flags
+		case bmdDeckLinkConfigSwapSerialRxTx:
+			printf(" %-30s: %s\n", "Swap Serial Rx/Tx", BooleanString[!!boolVal]);
+			break;
+
+		// Audio Input/Output Flags
+		case bmdDeckLinkConfigAnalogAudioConsumerLevels:
+			printf(" %-30s: %s\n", "Analog Audio Consumer Level", BooleanString[!!boolVal]);
+			break;
+
+		// Video output flags
+		case bmdDeckLinkConfigFieldFlickerRemoval:
+			printf(" %-30s: %s\n", "Field Flicker Removal", BooleanString[!!boolVal]);
+			break;
+
+		case bmdDeckLinkConfigHD1080p24ToHD1080i5994Conversion:
+			printf(" %-30s: %s\n", "1080p24 to 1080i 59.94 conversion", BooleanString[!!boolVal]);
+			break;
+
+		case bmdDeckLinkConfig444SDIVideoOutput:
+			printf(" %-30s: %s\n", "YUV444 SDI Video Output", BooleanString[!!boolVal]);
+			break;
+
+		case bmdDeckLinkConfigBlackVideoOutputDuringCapture:
+			printf(" %-30s: %s\n", "Black Video Output During Capture", BooleanString[!!boolVal]);
+			break;
+
+		case bmdDeckLinkConfigLowLatencyVideoOutput:
+			printf(" %-30s: %s\n", "Low-Latency Video Output", BooleanString[!!boolVal]);
+			break;
+
+		case bmdDeckLinkConfigDownConversionOnAllAnalogOutput:
+			printf(" %-30s: %s\n", "Down Conversion On All Analog Output", BooleanString[!!boolVal]);
+			break;
+
+		case bmdDeckLinkConfigSMPTELevelAOutput:
+			printf(" %-30s: %s\n", "SMPTE Level A Output", BooleanString[!!boolVal]);
+			break;
+
+		case bmdDeckLinkConfigRec2020Output:
+			printf(" %-30s: %s\n", "Rec.2020 Output", BooleanString[!!boolVal]);
+			break;
+
+		case bmdDeckLinkConfigQuadLinkSDIVideoOutputSquareDivisionSplit:
+			printf(" %-30s: %s\n", "Quad-Link SDI Video Output Square Division Split", BooleanString[!!boolVal]);
+			break;
+
+		case bmdDeckLinkConfigOutput1080pAsPsF:
+			printf(" %-30s: %s\n", "1080p As PsF", BooleanString[!!boolVal]);
+			break;
+
+		// Video Input Flags
+		case bmdDeckLinkConfigVideoInputScanning:
+			printf(" %-30s: %s\n", "Video Input Scanning", BooleanString[!!boolVal]);
+			break;
+
+		case bmdDeckLinkConfigUseDedicatedLTCInput:
+			printf(" %-30s: %s\n", "Use Dedicated LTC Input", BooleanString[!!boolVal]);
+			break;
+
+		case bmdDeckLinkConfigSDIInput3DPayloadOverride:
+			printf(" %-30s: %s\n", "SDI Input 3D Payload Override", BooleanString[!!boolVal]);
+			break;
+
+		case bmdDeckLinkConfigCapture1080pAsPsF:
+			printf(" %-30s: %s\n", "Capture 1080p As PsF", BooleanString[!!boolVal]);
+			break;
+
+		// Audio Input Flags
+		case bmdDeckLinkConfigMicrophonePhantomPower:
+			printf(" %-30s: %s\n", "Microphone Phantom Power", BooleanString[!!boolVal]);
+			break;
+
+		// Video Input/Output Integers
+		case bmdDeckLinkConfigHDMI3DPackingFormat:
+			printf(" %-30s: %s\n", "HDMI 3D Packing Format", Video3DPackingFormatString[intVal]);
+			break;
+
+		case bmdDeckLinkConfigBypass:
+			printf(" %-30s: %ld\n", "Bypass", intVal);
+			break;
+
+		case bmdDeckLinkConfigClockTimingAdjustment:
+			printf(" %-30s: %ld\n", "Clock Timing Adjustment", intVal);
+			break;
+
+		// Video Output Integers
+		case bmdDeckLinkConfigVideoOutputConnection:
+			printf(" %-30s: ", "Video Output Connection");
+			for (int i=0; i<6; i++)
+				if (intVal&(1<<i))	std::cout << VideoConnectionString[i];
+			std::cout << std::endl;
+			break;
+
+		case bmdDeckLinkConfigVideoOutputConversionMode:
+			printf(" %-30s: %s\n", "Video Output Conversion Mode", VideoOutputConversionModeString[intVal]);
+			break;
+
+		case bmdDeckLinkConfigAnalogVideoOutputFlags:
+			printf(" %-30s: ", "Analog Video Output Flags");
+			if (intVal & bmdAnalogVideoFlagCompositeSetup75) std::cout << "[Composite Setup 75]";
+			if (intVal & bmdAnalogVideoFlagComponentBetacamLevels) std::cout << "[Component Betacam Levels]";
+			std::cout << std::endl;
+			break;
+
+		case bmdDeckLinkConfigReferenceInputTimingOffset:
+			printf(" %-30s: %ld\n", "Reference Input Timing Offset", intVal);
+			break;
+
+		case bmdDeckLinkConfigVideoOutputIdleOperation:
+			printf(" %-30s: %s\n", "Video Output Idle Operation", VideoOutputOpearationString[intVal]);
+			break;
+
+		case bmdDeckLinkConfigDefaultVideoOutputMode:
+			printf(" %-30s: %s\n", "Default Video Output Mode", DisplayModeString[intVal]);
+			break;
+
+		case bmdDeckLinkConfigDefaultVideoOutputModeFlags:
+			printf(" %-30s: 0x%08x\n", "Default Video Output Mode Flag", intVal);
+			break;
+
+		case bmdDeckLinkConfigSDIOutputLinkConfiguration:
+			printf(" %-30s: %s\n", "SDI Output Link Configuration", LinkConfigurationString[intVal]);
+			break;
+
+		case bmdDeckLinkConfigHDMITimecodePacking:
+			printf(" %-30s: %s\n", "HDMI Timecode Packing", HDMITimecodePackingString[intVal]);
+			break;
+
+		case bmdDeckLinkConfigPlaybackGroup:
+			printf(" %-30s: 0x%08x\n", "Playback Group", intVal);
+			break;
+
+		// Video Input Integers
+		case bmdDeckLinkConfigVideoInputConnection:
+			printf(" %-30s: ", "Video Input Connection");
+			for (int i=0; i<6; i++)
+				if (intVal&(1<<i))	std::cout << VideoConnectionString[i];
+			std::cout << std::endl;
+			break;
+
+		case bmdDeckLinkConfigAnalogVideoInputFlags:
+			printf(" %-30s: ", "Analog Video Input Flags");
+			if (intVal & bmdAnalogVideoFlagCompositeSetup75) std::cout << "[Composite Setup 75]";
+			if (intVal & bmdAnalogVideoFlagComponentBetacamLevels) std::cout << "[Component Betacam Levels]";
+			std::cout << std::endl;
+			break;
+
+		case bmdDeckLinkConfigVideoInputConversionMode:
+			printf(" %-30s: %s\n", "Video Input Conversion Mode", VideoInputConversionModeString[intVal]);
+			break;
+
+		case bmdDeckLinkConfig32PulldownSequenceInitialTimecodeFrame:
+		case bmdDeckLinkConfigVANCSourceLine1Mapping:
+		case bmdDeckLinkConfigVANCSourceLine2Mapping:
+		case bmdDeckLinkConfigVANCSourceLine3Mapping:
+			break;
+
+		case bmdDeckLinkConfigCapturePassThroughMode:
+			printf(" %-30s: %s\n", "Capture Pass Through Mode", CapturePassThroughMode[intVal]);
+			break;
+
+		case bmdDeckLinkConfigCaptureGroup:
+			printf(" %-30s: 0x%08x\n", "Capture Group", intVal);
+			break;
+
+		// Audio Input Integers
+		case bmdDeckLinkConfigAudioInputConnection:
+			printf(" %-30s: ", "Audio Input Connection");
+			for (int i=0; i<7; i++)
+				if (intVal&(1<<i))	std::cout << AudioConnectionString[i];
+			std::cout << std::endl;
+			break;
+
+		// Audio Output Integers
+		case bmdDeckLinkConfigAudioOutputAESAnalogSwitch:
+			break;
+
+		// Deck Control Integers
+		case bmdDeckLinkConfigDeckControlConnection:
+			printf(" %-30s: ", "Deck Control Connection");
+			if ( intVal & bmdDeckControlConnectionRS422Remote1) std::cout << "RS-422 Remote 1 ";
+			if ( intVal & bmdDeckControlConnectionRS422Remote2) std::cout << "RS-422 Remote 2 ";
+			std::cout << std::endl;
+			break;
+
+		// Video Output Floats
+		case bmdDeckLinkConfigVideoOutputComponentLumaGain:
+		case bmdDeckLinkConfigVideoOutputComponentChromaBlueGain:
+		case bmdDeckLinkConfigVideoOutputComponentChromaRedGain:
+		case bmdDeckLinkConfigVideoOutputCompositeLumaGain:
+		case bmdDeckLinkConfigVideoOutputCompositeChromaGain:
+		case bmdDeckLinkConfigVideoOutputSVideoLumaGain:
+		case bmdDeckLinkConfigVideoOutputSVideoChromaGain:
+		// Video Input Floats
+		case bmdDeckLinkConfigVideoInputComponentLumaGain:
+		case bmdDeckLinkConfigVideoInputComponentChromaBlueGain:
+		case bmdDeckLinkConfigVideoInputComponentChromaRedGain:
+		case bmdDeckLinkConfigVideoInputCompositeLumaGain:
+		case bmdDeckLinkConfigVideoInputCompositeChromaGain:
+		case bmdDeckLinkConfigVideoInputSVideoLumaGain:
+		case bmdDeckLinkConfigVideoInputSVideoChromaGain:
+		// Audio Input Floats
+		case bmdDeckLinkConfigAnalogAudioInputScaleChannel1:
+		case bmdDeckLinkConfigAnalogAudioInputScaleChannel2:
+		case bmdDeckLinkConfigAnalogAudioInputScaleChannel3:
+		case bmdDeckLinkConfigAnalogAudioInputScaleChannel4:
+		case bmdDeckLinkConfigDigitalAudioInputScale:
+		case bmdDeckLinkConfigMicrophoneInputGain:
+		// Audio Output Floats
+		case bmdDeckLinkConfigAnalogAudioOutputScaleChannel1:
+		case bmdDeckLinkConfigAnalogAudioOutputScaleChannel2:
+		case bmdDeckLinkConfigAnalogAudioOutputScaleChannel3:
+		case bmdDeckLinkConfigAnalogAudioOutputScaleChannel4:
+		case bmdDeckLinkConfigDigitalAudioOutputScale:
+		case bmdDeckLinkConfigHeadphoneVolume:
+			break;
+
+		// Device Information Strings
+		case bmdDeckLinkConfigDeviceInformationLabel:
+			printf(" %-30s: %s\n", "Label",  stringVal);
+			break;
+
+		case bmdDeckLinkConfigDeviceInformationSerialNumber:
+			printf(" %-30s: %s\n", "Serial#",  stringVal);
+			break;
+
+		case bmdDeckLinkConfigDeviceInformationCompany:
+			printf(" %-30s: %s\n", "Company",  stringVal);
+			break;
+
+		case bmdDeckLinkConfigDeviceInformationPhone:
+			printf(" %-30s: %s\n", "Phone",  stringVal);
+			break;
+
+		case bmdDeckLinkConfigDeviceInformationEmail:
+			printf(" %-30s: %s\n", "Email",  stringVal);
+			break;
+
+		case bmdDeckLinkConfigDeviceInformationDate:
+			printf(" %-30s: %s\n", "Date",  stringVal);
+			break;
+
+		default:
+			break;
 		}
 	}
 }
@@ -538,12 +1176,12 @@ void Decklink::ShowStatus(IDeckLinkStatus* deckLinkStatus, BMDDeckLinkStatusID s
 		}
 		case bmdDeckLinkStatusPCIExpressLinkWidth:
 		{
-			printf("%-40s: %d\n", "PCI-E Link Width", intVal);
+			printf("%-40s: %ld\n", "PCI-E Link Width", intVal);
 			break;
 		}
 		case bmdDeckLinkStatusPCIExpressLinkSpeed:
 		{
-			printf("%-40s: %d\n", "PCI-E Link Speed", intVal);
+			printf("%-40s: %ld\n", "PCI-E Link Speed", intVal);
 			break;
 		}
 		case bmdDeckLinkStatusLastVideoOutputPixelFormat:
@@ -553,7 +1191,7 @@ void Decklink::ShowStatus(IDeckLinkStatus* deckLinkStatus, BMDDeckLinkStatusID s
 		}
 		case bmdDeckLinkStatusReferenceSignalMode:
 		{
-			printf("%-40s: %d\n", "Ref Signal Mode", DisplayModeString[intVal]);
+			printf("%-40s: %s\n", "Ref Signal Mode", DisplayModeString[intVal]);
 			break;
 		}
 		case bmdDeckLinkStatusReferenceSignalFlags:
@@ -584,31 +1222,26 @@ void Decklink::ShowStatus(IDeckLinkStatus* deckLinkStatus, BMDDeckLinkStatusID s
 		}
 		case bmdDeckLinkStatusDeviceTemperature:
 		{
-			printf("%-40s: %d\n", "Device Temperature", intVal);
+			printf("%-40s: %ld\n", "Device Temperature", intVal);
 			break;
 		}
 		case bmdDeckLinkStatusVideoInputSignalLocked:
 		{
-			printf("%-40s: %s\n", "Video Input Signal Locked", BoonleanString[!!boolVal]);
+			printf("%-40s: %s\n", "Video Input Signal Locked", BooleanString[!!boolVal]);
 			break;
 		}
 		case bmdDeckLinkStatusReferenceSignalLocked:
 		{
-			printf("%-40s: %s\n", "Ref Signal Locked", BoonleanString[!!boolVal]);
+			printf("%-40s: %s\n", "Ref Signal Locked", BooleanString[!!boolVal]);
 			break;
 		}
 		case bmdDeckLinkStatusReceivedEDID:
 		{
-			printf("%-40s: %s\n", "Received EDID", BoonleanString[!!boolVal]);
+			printf("%-40s: %s\n", "Received EDID", BooleanString[!!boolVal]);
 			break;
 		}
 		default:
 			break;
 		}
 	}
-}
-
-const char* Decklink::GetDisplayModeNameFromEnum(BMDDisplayMode displayModeEnum)
-{
-
 }

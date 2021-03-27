@@ -12,6 +12,8 @@
 #include <memory>
 #include <vector>
 
+#define SAEF_RELEASE(x)	if (x) x->Release();
+
 class Decklink
 {
 public:
@@ -25,7 +27,8 @@ public:
 	void ListDeviceConfig(uint32_t deviceId);
 	void ListDeviceStatus(uint32_t deviceId);
 
-	void ScanSignal(uint32_t deviceId);
+	void Capture(uint32_t deviceId);
+	void Display(uint32_t deviceId);
 
 private:
 	IDeckLinkIterator				*m_deckLinkIterator;
@@ -38,7 +41,29 @@ private:
 	void ShowStatus(IDeckLinkStatus* deckLinkStatus, BMDDeckLinkStatusID statusID);
 };
 
+class NotificationCallback: public IDeckLinkInputCallback
+{
+public:
+	IDeckLinkInput* m_deckLinkInput;
 
+	NotificationCallback(IDeckLinkInput *deckLinkInput);
+
+	HRESULT	STDMETHODCALLTYPE QueryInterface (REFIID iid, LPVOID *ppv);
+	ULONG		STDMETHODCALLTYPE AddRef();
+	ULONG		STDMETHODCALLTYPE Release();
+	HRESULT	STDMETHODCALLTYPE VideoInputFormatChanged(
+			/* in */ BMDVideoInputFormatChangedEvents notificationEvents,
+			/* in */ IDeckLinkDisplayMode *newDisplayMode,
+			/* in */ BMDDetectedVideoInputFormatFlags detectedSignalFlags);
+	HRESULT	STDMETHODCALLTYPE VideoInputFrameArrived(
+			/* in */ IDeckLinkVideoInputFrame* videoFrame,
+			/* in */ IDeckLinkAudioInputPacket* audioPacket);
+
+private:
+	int32_t		m_refCount;
+
+	virtual ~NotificationCallback() {}
+};
 
 
 

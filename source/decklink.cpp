@@ -337,17 +337,19 @@ void Decklink::ListDeviceStatus(uint32_t deviceId)
 	}
 }
 
-void Decklink::ScanSignal(uint32_t deviceId)
+void Decklink::Capture(uint32_t deviceId)
 {
-	HRESULT result;
-	IDeckLinkProfileAttributes* deckLinkAttributes = NULL;
-	IDeckLink* deckLinkInput = NULL;
+	HRESULT 							result;
+	IDeckLinkProfileAttributes	*deckLinkAttributes = NULL;
+	IDeckLinkInput					*deckLinkInput = NULL;
+	NotificationCallback			*notificationCallback = NULL;
 	bool supportIFD;
 
 	if (deviceId<m_deckLinkDeviceList.size())
 	{
 		std::cout << "Device " << deviceId << ": " << m_deckLinkDeviceDisplayName[deviceId] << std::endl;
 
+		// Open Profile Attributes Interface
 		result = m_deckLinkDeviceList[deviceId]->QueryInterface(IID_IDeckLinkProfileAttributes, (void**)&deckLinkAttributes);
 		if (result != S_OK)
 	    {
@@ -355,6 +357,7 @@ void Decklink::ScanSignal(uint32_t deviceId)
 			goto fail;
 		}
 
+		// Query if Input Format Detection is supported
 		result = deckLinkAttributes->GetFlag(BMDDeckLinkSupportsInputFormatDetection, &supportIFD);
 		if ((result != S_OK) || (supportIFD == false))
 		{
@@ -362,6 +365,7 @@ void Decklink::ScanSignal(uint32_t deviceId)
 			goto fail;
 		}
 
+		// Open DeckLink Input Interface
 		result = m_deckLinkDeviceList[deviceId]->QueryInterface(IID_IDeckLinkInput, (void**)&deckLinkInput);
 		if (result != S_OK)
 		{
@@ -369,11 +373,61 @@ void Decklink::ScanSignal(uint32_t deviceId)
 			goto fail;
 		}
 
-		// Todo
+		// Create notification callback
+		notificationCallback = new NotificationCallback(deckLinkInput);
+		if (notificationCallback == NULL)
+		{
+			fprintf(stderr, "Could not create notification callback object\n");
+			goto fail;
+		}
 
+		// Set the callback to DeckLink input interface
+		result = deckLinkInput->SetCallback(notificationCallback);
+		if (result != S_OK)
+		{
+			fprintf(stderr, "Could not set callback - result = %08x\n", result);
+			goto fail;
+		}
+
+		// Enable video input with a default video mode and the automatic format detection feature enabled
+		result = deckLinkInput->EnableVideoInput(bmdModeNTSC, bmdFormat10BitYUV, bmdVideoInputEnableFormatDetection);
+		if (result != S_OK)
+		{
+			fprintf(stderr, "Could not enable video input - result = %08x\n", result);
+			goto fail;
+		}
+
+		printf("Starting streams\n");
+
+		// Start capture
+		result = deckLinkInput->StartStreams();
+		if (result != S_OK)
+		{
+			fprintf(stderr, "Could not start capture - result = %08x\n", result);
+			goto fail;
+		}
+
+	    printf("Monitoring... Press <RETURN> to exit\n");
+
+	    getchar();
+
+	    printf("Exiting.\n");
+
+	    // Stop capture
+	    result = deckLinkInput->StopStreams();
+
+	    // Disable the video input interface
+	    result = deckLinkInput->DisableVideoInput();
 fail:
-		;
+		SAEF_RELEASE(deckLinkAttributes);
+		SAEF_RELEASE(deckLinkInput);
+		SAEF_RELEASE(notificationCallback);
 	}
+}
+
+void Decklink::Display(uint32_t deviceId)
+{
+	HRESULT result;
 }
 
 void Decklink::ShowAttribute(IDeckLinkProfileAttributes* deckLinkAttributes, BMDDeckLinkAttributeID attributeID)
@@ -1244,4 +1298,150 @@ void Decklink::ShowStatus(IDeckLinkStatus* deckLinkStatus, BMDDeckLinkStatusID s
 			break;
 		}
 	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int32_t AtomicIncrement(volatile int32_t* value)
+{
+	return __sync_add_and_fetch(value, 1);
+}
+
+int32_t AtomicDecrement(volatile int32_t* value)
+{
+	return __sync_sub_and_fetch(value, 1);
+}
+
+NotificationCallback::NotificationCallback(IDeckLinkInput *deckLinkInput) :
+		m_refCount(1)
+{
+	m_deckLinkInput = deckLinkInput;
+}
+
+HRESULT	STDMETHODCALLTYPE NotificationCallback::QueryInterface (REFIID iid, LPVOID *ppv)
+{
+	return E_NOINTERFACE;
+}
+
+ULONG	STDMETHODCALLTYPE NotificationCallback::AddRef()
+{
+	return AtomicIncrement(&m_refCount);
+}
+
+ULONG	STDMETHODCALLTYPE NotificationCallback::Release()
+{
+	ULONG newRefValue = AtomicDecrement(&m_refCount);
+
+	if (newRefValue == 0)
+	delete this;
+
+	return newRefValue;
+}
+
+HRESULT	STDMETHODCALLTYPE NotificationCallback::VideoInputFormatChanged(
+		/* in */ BMDVideoInputFormatChangedEvents notificationEvents,
+		/* in */ IDeckLinkDisplayMode *newDisplayMode,
+		/* in */ BMDDetectedVideoInputFormatFlags detectedSignalFlags)
+{
+	BMDPixelFormat	pixelFormat = bmdFormat10BitYUV;
+	const char*		displayModeString = NULL;
+
+	// Check for video field changes
+	if (notificationEvents & bmdVideoInputFieldDominanceChanged)
+	{
+		BMDFieldDominance fieldDominance;
+
+		fieldDominance = newDisplayMode->GetFieldDominance();
+		printf("Input field dominance changed to ");
+		switch (fieldDominance) {
+		case bmdUnknownFieldDominance:
+			printf("unknown\n");
+			break;
+		case bmdLowerFieldFirst:
+			printf("lower field first\n");
+			break;
+		case bmdUpperFieldFirst:
+			printf("upper field first\n");
+			break;
+		case bmdProgressiveFrame:
+			printf("progressive\n");
+			break;
+		case bmdProgressiveSegmentedFrame:
+			printf("progressive segmented frame\n");
+			break;
+		default:
+			break;
+		}
+	}
+
+	// Check if the pixel format has changed
+	if (notificationEvents & bmdVideoInputColorspaceChanged)
+	{
+		printf("Input color space changed to ");
+		if (detectedSignalFlags == bmdDetectedVideoInputYCbCr422)
+		{
+			printf("YCbCr422\n");
+			pixelFormat = bmdFormat10BitYUV;
+		}
+		if (detectedSignalFlags == bmdDetectedVideoInputRGB444)
+		{
+			printf("RGB444\n");
+			pixelFormat = bmdFormat10BitRGB;
+		}
+	}
+
+	// Check if the video mode has changed
+	if (notificationEvents & bmdVideoInputDisplayModeChanged)
+	{
+		std::string modeName;
+
+		// Obtain the name of the video mode
+		newDisplayMode->GetName(&displayModeString);
+		modeName = std::string(displayModeString);
+
+		printf("Input display mode changed to: %s\n", modeName.c_str());
+	}
+
+	// Pause video capture
+	m_deckLinkInput->PauseStreams();
+
+	// Enable video input with the properties of the new video stream
+	m_deckLinkInput->EnableVideoInput(newDisplayMode->GetDisplayMode(), pixelFormat, bmdVideoInputEnableFormatDetection);
+
+	// Flush any queued video frames
+	m_deckLinkInput->FlushStreams();
+
+	// Start video capture
+	m_deckLinkInput->StartStreams();
+	return S_OK;
+}
+
+HRESULT	STDMETHODCALLTYPE NotificationCallback::VideoInputFrameArrived(
+		/* in */ IDeckLinkVideoInputFrame* videoFrame,
+		/* in */ IDeckLinkAudioInputPacket* audioPacket)
+{
+	if (videoFrame)
+	{
+		int32_t width = videoFrame->GetWidth();
+		int32_t height = videoFrame->GetHeight();
+		BMDPixelFormat pix_fmt = videoFrame->GetPixelFormat();
+		BMDFrameFlags flags = videoFrame->GetFlags();
+
+		printf(" %-30s: %dx%d\n", "Resolution", width, height);
+		printf(" %-30s: %s\n", "Pixel Format", PixelFormatString[pix_fmt]);
+		printf(" %-30s: \n", "Flags");
+		if (flags & bmdFrameFlagFlipVertical) 			printf("[Flip Vertical]");
+		if (flags & bmdFrameContainsHDRMetadata) 		printf("[HDR Metadata]");
+		if (flags & bmdFrameContainsCintelMetadata) 	printf("[Cintel Metadata]");
+		if (flags & bmdFrameCapturedAsPsF) 				printf("[Capture As PsF]");
+		if (flags & bmdFrameHasNoInputSource) 			printf("[Has no Input Source]");
+		printf("\n");
+		printf("\n");
+	}
+
+	if (audioPacket)
+	{
+		printf("Audio Packet Arrived\n");
+	}
+	return S_OK;
 }

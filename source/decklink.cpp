@@ -339,10 +339,10 @@ void Decklink::ListDeviceStatus(uint32_t deviceId)
 
 void Decklink::Capture(uint32_t deviceId)
 {
-	HRESULT 							result;
-	IDeckLinkProfileAttributes	*deckLinkAttributes = NULL;
-	IDeckLinkInput					*deckLinkInput = NULL;
-	NotificationCallback			*notificationCallback = NULL;
+	HRESULT 								result;
+	IDeckLinkProfileAttributes		*deckLinkAttributes = NULL;
+	IDeckLinkInput						*deckLinkInput = NULL;
+	NotificationCaptureCallback	*notificationCallback = NULL;
 	bool supportIFD;
 
 	if (deviceId<m_deckLinkDeviceList.size())
@@ -374,7 +374,7 @@ void Decklink::Capture(uint32_t deviceId)
 		}
 
 		// Create notification callback
-		notificationCallback = new NotificationCallback(deckLinkInput);
+		notificationCallback = new NotificationCaptureCallback(deckLinkInput);
 		if (notificationCallback == NULL)
 		{
 			fprintf(stderr, "Could not create notification callback object\n");
@@ -427,7 +427,36 @@ fail:
 
 void Decklink::Display(uint32_t deviceId)
 {
-	HRESULT result;
+	HRESULT 								result;
+	IDeckLinkProfileAttributes		*deckLinkAttributes = NULL;
+	IDeckLinkOutput					*deckLinkOutput = NULL;
+	NotificationDisplayCallback	*notificationCallback = NULL;
+
+	if (deviceId<m_deckLinkDeviceList.size())
+	{
+		std::cout << "Device " << deviceId << ": " << m_deckLinkDeviceDisplayName[deviceId] << std::endl;
+
+		// Open Profile Attributes Interface
+		result = m_deckLinkDeviceList[deviceId]->QueryInterface(IID_IDeckLinkProfileAttributes, (void**)&deckLinkAttributes);
+		if (result != S_OK)
+	    {
+			fprintf(stderr, "Unable to open profile attribute interface (0x%08x)\n", result);
+			goto fail;
+		}
+
+		// Open DeckLink Output Interface
+		result = m_deckLinkDeviceList[deviceId]->QueryInterface(IID_IDeckLinkOutput, (void**)&deckLinkOutput);
+		if (result != S_OK)
+		{
+			fprintf(stderr, "Could not obtain the IDeckLinkInput interface - result = %08x\n", result);
+			goto fail;
+		}
+
+fail:
+		SAEF_RELEASE(deckLinkAttributes);
+		SAEF_RELEASE(deckLinkOutput);
+		SAEF_RELEASE(notificationCallback);
+	}
 }
 
 void Decklink::ShowAttribute(IDeckLinkProfileAttributes* deckLinkAttributes, BMDDeckLinkAttributeID attributeID)
@@ -1312,23 +1341,64 @@ int32_t AtomicDecrement(volatile int32_t* value)
 	return __sync_sub_and_fetch(value, 1);
 }
 
-NotificationCallback::NotificationCallback(IDeckLinkInput *deckLinkInput) :
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+DeckLinkDevice::DeckLinkDevice() :
+	m_deckLink(nullptr),
+	m_deckLinkConfig(nullptr),
+	m_deckLinkStatus(nullptr),
+	m_deckLinkNotification(nullptr),
+	m_notificationCallback(nullptr),
+	m_deckLinkOutput(nullptr),
+	m_outputCallback(nullptr),
+	m_totalFramesScheduled(0),
+	m_nextFrameToSchedule(0),
+	m_stopped(false)
+{
+
+}
+
+DeckLinkDevice::~DeckLinkDevice()
+{
+
+}
+
+HRESULT DeckLinkDevice::setup(IDeckLink* deckLink)
+{
+
+}
+
+HRESULT DeckLinkDevice::waitForReferenceLock();
+void DeckLinkDevice::notifyReferenceInputChanged();
+HRESULT DeckLinkDevice::prepareForPlayback();
+HRESULT DeckLinkDevice::startPlayback();
+HRESULT DeckLinkDevice::stopPlayback();
+HRESULT DeckLinkDevice::waitForPlaybackStop();
+void DeckLinkDevice::notifyDeviceStopped();
+bool DeckLinkDevice::stopped() const;
+HRESULT DeckLinkDevice::cleanUpFromPlayback();
+HRESULT DeckLinkDevice::scheduleNextFrame();
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+NotificationCaptureCallback::NotificationCaptureCallback(IDeckLinkInput *deckLinkInput) :
 		m_refCount(1)
 {
 	m_deckLinkInput = deckLinkInput;
 }
 
-HRESULT	STDMETHODCALLTYPE NotificationCallback::QueryInterface (REFIID iid, LPVOID *ppv)
+HRESULT	STDMETHODCALLTYPE NotificationCaptureCallback::QueryInterface (REFIID iid, LPVOID *ppv)
 {
 	return E_NOINTERFACE;
 }
 
-ULONG	STDMETHODCALLTYPE NotificationCallback::AddRef()
+ULONG	STDMETHODCALLTYPE NotificationCaptureCallback::AddRef()
 {
 	return AtomicIncrement(&m_refCount);
 }
 
-ULONG	STDMETHODCALLTYPE NotificationCallback::Release()
+ULONG	STDMETHODCALLTYPE NotificationCaptureCallback::Release()
 {
 	ULONG newRefValue = AtomicDecrement(&m_refCount);
 
@@ -1338,7 +1408,7 @@ ULONG	STDMETHODCALLTYPE NotificationCallback::Release()
 	return newRefValue;
 }
 
-HRESULT	STDMETHODCALLTYPE NotificationCallback::VideoInputFormatChanged(
+HRESULT	STDMETHODCALLTYPE NotificationCaptureCallback::VideoInputFormatChanged(
 		/* in */ BMDVideoInputFormatChangedEvents notificationEvents,
 		/* in */ IDeckLinkDisplayMode *newDisplayMode,
 		/* in */ BMDDetectedVideoInputFormatFlags detectedSignalFlags)
@@ -1416,7 +1486,7 @@ HRESULT	STDMETHODCALLTYPE NotificationCallback::VideoInputFormatChanged(
 	return S_OK;
 }
 
-HRESULT	STDMETHODCALLTYPE NotificationCallback::VideoInputFrameArrived(
+HRESULT	STDMETHODCALLTYPE NotificationCaptureCallback::VideoInputFrameArrived(
 		/* in */ IDeckLinkVideoInputFrame* videoFrame,
 		/* in */ IDeckLinkAudioInputPacket* audioPacket)
 {
@@ -1427,16 +1497,28 @@ HRESULT	STDMETHODCALLTYPE NotificationCallback::VideoInputFrameArrived(
 		BMDPixelFormat pix_fmt = videoFrame->GetPixelFormat();
 		BMDFrameFlags flags = videoFrame->GetFlags();
 
-		printf(" %-30s: %dx%d\n", "Resolution", width, height);
-		printf(" %-30s: %s\n", "Pixel Format", PixelFormatString[pix_fmt]);
-		printf(" %-30s: \n", "Flags");
-		if (flags & bmdFrameFlagFlipVertical) 			printf("[Flip Vertical]");
-		if (flags & bmdFrameContainsHDRMetadata) 		printf("[HDR Metadata]");
-		if (flags & bmdFrameContainsCintelMetadata) 	printf("[Cintel Metadata]");
-		if (flags & bmdFrameCapturedAsPsF) 				printf("[Capture As PsF]");
-		if (flags & bmdFrameHasNoInputSource) 			printf("[Has no Input Source]");
-		printf("\n");
-		printf("\n");
+		if (m_lastFrameInfo.width != width ||
+				m_lastFrameInfo.height != height ||
+				m_lastFrameInfo.pix_fmt != pix_fmt ||
+				m_lastFrameInfo.flags != flags)
+		{
+			printf(" %-30s: %dx%d\n", "Resolution", width, height);
+			printf(" %-30s: %s\n", "Pixel Format", PixelFormatString[pix_fmt]);
+			printf(" %-30s: \n", "Flags");
+			if (flags==0)	printf("0x%08x", flags);
+			else
+			{
+				if (flags & bmdFrameFlagFlipVertical) 			printf("[Flip Vertical]");
+				if (flags & bmdFrameContainsHDRMetadata) 		printf("[HDR Metadata]");
+				if (flags & bmdFrameContainsCintelMetadata) 	printf("[Cintel Metadata]");
+				if (flags & bmdFrameCapturedAsPsF) 				printf("[Capture As PsF]");
+				if (flags & bmdFrameHasNoInputSource) 			printf("[Has no Input Source]");
+			}
+			printf("\n");
+			printf("\n");
+
+			m_lastFrameInfo = {width, height, pix_fmt, flags};
+		}
 	}
 
 	if (audioPacket)
@@ -1444,4 +1526,88 @@ HRESULT	STDMETHODCALLTYPE NotificationCallback::VideoInputFrameArrived(
 		printf("Audio Packet Arrived\n");
 	}
 	return S_OK;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+OutputCallback::OutputCallback(DeckLinkDevice* deckLinkDevice) :
+	m_deckLinkDevice(deckLinkDevice),
+	m_refCount(1)
+{
+
+}
+
+HRESULT	STDMETHODCALLTYPE OutputCallback::ScheduledFrameCompleted(IDeckLinkVideoFrame* completedFrame, BMDOutputFrameCompletionResult result)
+{
+	if (!m_deckLinkDevice->stopped())
+		m_deckLinkDevice->scheduleNextFrame();
+	return S_OK;
+}
+
+HRESULT	STDMETHODCALLTYPE OutputCallback::ScheduledPlaybackHasStopped(void)
+{
+	m_deckLinkDevice->notifyDeviceStopped();
+	return S_OK;
+}
+
+HRESULT	STDMETHODCALLTYPE OutputCallback::QueryInterface(REFIID iid, LPVOID *ppv)
+{
+	return E_NOINTERFACE;
+}
+
+ULONG		STDMETHODCALLTYPE OutputCallback::AddRef()
+{
+	return ++m_refCount;
+}
+
+ULONG		STDMETHODCALLTYPE OutputCallback::Release()
+{
+	uint32_t newRefValue = --m_refCount;
+
+	if (newRefValue == 0)
+		delete this;
+
+	return newRefValue;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+NotificationDisplayCallback::NotificationDisplayCallback(DeckLinkDevice* deckLinkDevice) :
+		m_deckLinkDevice(deckLinkDevice),
+		m_refCount(1)
+{
+
+}
+
+HRESULT	STDMETHODCALLTYPE NotificationDisplayCallback::Notify(BMDNotifications topic, uint64_t param1, uint64_t param2)
+{
+	if (topic != bmdStatusChanged)
+		return S_OK;
+
+	if ((BMDDeckLinkStatusID)param1 != bmdDeckLinkStatusReferenceSignalLocked)
+		return S_OK;
+
+	m_deckLinkDevice->notifyReferenceInputChanged();
+	return S_OK;
+}
+
+HRESULT	STDMETHODCALLTYPE NotificationDisplayCallback::QueryInterface(REFIID iid, LPVOID *ppv)
+{
+	return E_NOINTERFACE;
+}
+
+ULONG		STDMETHODCALLTYPE NotificationDisplayCallback::AddRef()
+{
+	return AtomicIncrement(&m_refCount);
+}
+
+ULONG		STDMETHODCALLTYPE NotificationDisplayCallback::Release()
+{
+	ULONG newRefValue = AtomicDecrement(&m_refCount);
+
+	if (newRefValue == 0)
+		delete this;
+
+	return newRefValue;
 }

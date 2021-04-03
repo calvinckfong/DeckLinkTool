@@ -22,6 +22,9 @@ void ShowHelp(char* argv)
 	printf(" -c\tList the configure of the device.\n");
 	printf(" -s\tList the status of the device.\n");
 	printf("\n");
+	printf(" --capture\tCapture from the device.\n");
+	printf(" --display\tDisplay onto the device.\n");
+	printf("\n");
 }
 
 int main(int argc, char** argv)
@@ -46,8 +49,10 @@ int main(int argc, char** argv)
 		dl.ListDeviceConfig(deviceId);
 	else if (strcmp(argv[1], "-s")==0)
 		dl.ListDeviceStatus(deviceId);
-	else if (strcmp(argv[1], "--scan")==0)
-		dl.ScanSignal(deviceId);
+	else if (strcmp(argv[1], "--capture")==0)
+		dl.Capture(deviceId);
+	else if (strcmp(argv[1], "--display")==0)
+		dl.Display(deviceId);
 	else
 	{
 		std::cerr << "Unknown command " << argv[1] << std::endl;
